@@ -1,2 +1,4 @@
 opencv
 clip-interrogator==0.6.0
+openai
+replicate
