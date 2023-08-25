@@ -1,34 +1,50 @@
 import cv2
 import os
 
-def video_to_jpgs_per_minute(video_path, output_dir, frames_per_minute):
-    # Ensure the output directory exists
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+def video_to_jpgs_per_minute(video_path, output_folder, frames_per_minute):
+    # Ensure the output folder exists
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
 
     # Open the video file
-    video = cv2.VideoCapture(video_path)
-
-    # Get the video's frames per second (fps) rate
-    fps = int(video.get(cv2.CAP_PROP_FPS))
+    cap = cv2.VideoCapture(video_path)
+    if not cap.isOpened():
+        print("Error: Couldn't open the video file.")
+        return
     
-    # Calculate the interval (in terms of frames) at which to save frames
-    interval = fps * 60 // frames_per_minute
+    # Get the total number of frames and the FPS (frames per second) of the video
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    fps = int(cap.get(cv2.CAP_PROP_FPS))
+    
+    # Calculate the interval (in frames) at which to save frames based on the desired frames per minute
+    frames_per_second = frames_per_minute / 60
+    interval = int(fps / frames_per_second)
+    
+    output_files_dict = {}
 
-    frame_num = 0
-    saved_frame_count = 0
-
+    frame_no = 0
     while True:
-        ret, frame = video.read()
-
+        ret, frame = cap.read()
         if not ret:
             break
+        
+        if frame_no % interval == 0:
+            # Calculate the timestamp for the current frame
+            time_in_seconds = frame_no / fps
+            timestamp = "{:.2f}".format(time_in_seconds)
+            
+            # Construct the output path
+            output_path = os.path.join(output_folder, f"frame_{frame_no}.jpg")
+            
+            # Save the frame
+            cv2.imwrite(output_path, frame)
+            
+            # Update the dictionary
+            output_files_dict[output_path] = timestamp
 
-        if frame_num % interval == 0:
-            output_file = os.path.join(output_dir, f'frame_{saved_frame_count:04}.jpeg')
-            cv2.imwrite(output_file, frame)
-            saved_frame_count += 1
+        frame_no += 1
 
-        frame_num += 1
+    # Release the video capture object
+    cap.release()
 
-    video.release()
+    return output_files_dict
