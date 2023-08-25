@@ -7,7 +7,7 @@ def jpg_to_dynamic(image_path):
     
     openai.api_key = os.environ.get("OPENAI_API_KEY")
     
-    messages = [{"role": "user", "content": f"From an AI description of an image, extract the words related to emotions. Only output the words related to emotions. Output it like this:\nThe words related to emotions in the given description are: happy, sad\nHere is the description:\n{img_description}"}]
+    messages = [{"role": "user", "content": f"From an AI description of an image, extract the words related to emotions. Only output the words related to emotions. Output it like this:\nThe words related to emotions in the given description are: happy, sad\nHere is the description:\n{image_description}"}]
     response = openai.ChatCompletion.create(model="gpt-3.5", messages=messages)
     response_content = response["choices"][0]["message"]["content"]
 
